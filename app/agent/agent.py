@@ -7,23 +7,35 @@ from openai import OpenAI
 from app.agent.dispatcher import dispatch_tool
 from app.agent.prompts import AGENT_SYSTEM_PROMPT
 from app.agent.registry import TOOLS
+from app.session.models import Message
 
 
 load_dotenv()
 client = OpenAI()
 
 
-def run_agent(user_message: str) -> str:
+def _build_messages(history: list[Message]) -> list[dict[str, Any]]:
     messages: list[dict[str, Any]] = [
         {
             "role": "system",
             "content": AGENT_SYSTEM_PROMPT,
-        },
-        {
-            "role": "user",
-            "content": user_message,
-        },
+        }
     ]
+
+    for message in history:
+        if message.role in {"user", "assistant"}:
+            messages.append(
+                {
+                    "role": message.role,
+                    "content": message.content,
+                }
+            )
+
+    return messages
+
+
+def run_agent(history: list[Message]) -> str:
+    messages = _build_messages(history)
 
     while True:
         response = client.chat.completions.create(

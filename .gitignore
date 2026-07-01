@@ -5,4 +5,5 @@ __pycache__/
 .DS_Store
 data/raw/
 data/generated/
+data/sessions/
 data/restaurant/bookings.json

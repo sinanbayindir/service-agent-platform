@@ -36,7 +36,7 @@ def chat(request: ChatRequest) -> ChatResponse:
     session.add_message("user", request.message)
     session.update_slots(extract_slots(request.message))
 
-    answer = run_agent(request.message)
+    answer = run_agent(session.history)
 
     session.add_message("assistant", answer)
     session_manager.save(session)

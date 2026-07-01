@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 
-from app.rag.generator import answer_question
+from app.agent.agent import run_agent
 
 
 app = FastAPI(
@@ -25,5 +25,5 @@ def health_check() -> dict[str, str]:
 
 @app.post("/chat", response_model=ChatResponse)
 def chat(request: ChatRequest) -> ChatResponse:
-    answer = answer_question(request.message)
+    answer = run_agent(request.message)
     return ChatResponse(answer=answer)

@@ -4,7 +4,7 @@ Service Agent Platform is a lightweight AI application for service businesses.
 
 The first implementation focuses on restaurant reservations. It allows users to ask questions about the restaurant, check table availability, and make reservations through natural conversation.
 
-Rather than building a feature-heavy application, this project focuses on a clean architecture that combines retrieval, tool calling, session memory, and deterministic business logic into a simple and maintainable system.
+Rather than building a feature-rich application, this project focuses on a clean architecture that combines retrieval, tool calling, session memory, and deterministic business logic into a simple and maintainable system.
 
 ---
 
@@ -12,15 +12,15 @@ Rather than building a feature-heavy application, this project focuses on a clea
 
 - Hybrid Retrieval (Keyword Search + Vector Search + Reciprocal Rank Fusion)
 - Retrieval-Augmented Generation (RAG)
-- OpenAI tool calling
-- Restaurant knowledge base
-- Table availability checking
-- Reservation creation
-- Multi-turn conversations with session memory
-- Automatic slot extraction from natural language
-- Evaluation pipeline
-- Runtime monitoring with latency logging
-- Automated test suite
+- OpenAI Tool Calling
+- Restaurant Knowledge Base
+- Table Availability Checking
+- Reservation Creation
+- Multi-turn Conversations with Session Memory
+- Automatic Slot Extraction from Natural Language
+- Evaluation Pipeline
+- Runtime Monitoring and Latency Logging
+- Automated Test Suite
 
 ---
 
@@ -32,9 +32,9 @@ flowchart TD
     U[User]
     API[FastAPI API]
     SESSION[Session Manager]
-    AGENT[AI Agent Loop]
+    AGENT[AI Agent]
     RAG[Hybrid Retrieval]
-    KB[(Restaurant Knowledge Base)]
+    KB[(Knowledge Base)]
     DISPATCH[Tool Dispatcher]
     SEARCH[Search Tool]
     AVAIL[Availability Tool]
@@ -54,21 +54,29 @@ flowchart TD
     DISPATCH --> BOOK
 ```
 
-Layered view:
+### Layered View
 
 ```text
-User Interface
-  ↓
+User
+ │
+ ▼
 FastAPI API
-  ↓
-Session Layer
-  ↓
-Agent Layer
-  ↓
-Retrieval + Tool Layer
-  ↓
-Deterministic Business Logic
-  ↓
+ │
+ ▼
+Session Manager
+ │
+ ▼
+AI Agent
+ │
+ ├──────────────┐
+ ▼              ▼
+Hybrid RAG   Tool Calling
+ │              │
+ └──────┬───────┘
+        ▼
+Business Logic
+        │
+        ▼
 Knowledge Base / Runtime Storage
 ```
 
@@ -80,12 +88,28 @@ Python is responsible for deterministic business logic such as retrieval, availa
 
 ---
 
+## Knowledge Base
+
+The current knowledge base is a small Markdown document containing restaurant-specific information, including:
+
+- Opening hours
+- Reservation policies
+- Menu highlights
+- Dietary options
+- Parking information
+- Contact details
+- Frequently asked questions
+
+The knowledge base is indexed using both keyword and vector search. Results from both retrieval methods are merged using **Reciprocal Rank Fusion (RRF)** before being passed to the language model.
+
+---
+
 ## Project Structure
 
 ```text
 app/
 ├── agent/         AI agent loop, dispatcher and tool registry
-├── monitoring/    Runtime logging
+├── monitoring/    Runtime monitoring
 ├── rag/           Hybrid retrieval pipeline
 ├── session/       Session management and slot extraction
 ├── tools/         Restaurant business logic
@@ -103,6 +127,13 @@ tests/             Automated tests
 ---
 
 ## Getting Started
+
+### Clone the repository
+
+```bash
+git clone https://github.com/sinanbayindir/service-agent-platform.git
+cd service-agent-platform
+```
 
 ### Install dependencies
 
@@ -172,34 +203,21 @@ Run the evaluation suite:
 uv run python -m evaluations.run_evaluation
 ```
 
-Current results:
-
-- 6 scenarios
-- 6 passed
-- 100% accuracy
-
 ---
 
 ## Testing
 
-Run the test suite:
+Run the automated test suite:
 
 ```bash
 uv run pytest
 ```
 
-Current status:
-
-- 14 tests
-- 14 passing
-
 ---
 
 ## Monitoring
 
-Every conversation is logged during runtime.
-
-Each log entry contains:
+Each conversation is logged during runtime with:
 
 - Session ID
 - User message
@@ -207,7 +225,7 @@ Each log entry contains:
 - Response latency
 - Timestamp
 
-Runtime files are excluded from version control.
+Runtime logs and session data are intentionally excluded from version control.
 
 ---
 

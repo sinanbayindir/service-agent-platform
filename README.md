@@ -1,190 +1,224 @@
 # Service Agent Platform
 
-A production-minded AI service agent built by applying the concepts learned in LLM Zoomcamp: RAG, hybrid retrieval, tool calling, evaluation, and basic monitoring.
+Service Agent Platform is a lightweight AI application for service businesses.
 
-## Capstone MVP
+The first implementation focuses on restaurant reservations. It allows users to ask questions about the restaurant, check table availability, and make reservations through natural conversation.
 
-The first vertical is a restaurant reservation assistant.
+Rather than building a feature-heavy application, this project focuses on a clean architecture that combines retrieval, tool calling, session memory, and deterministic business logic into a simple and maintainable system.
 
-It can:
+---
 
-- answer restaurant questions from a knowledge base
-- retrieve information with hybrid search
-- check table availability
-- create bookings
-- keep session-based conversation history
-- log chat interactions
-- run a basic evaluation suite
+## Features
+
+- Hybrid Retrieval (Keyword Search + Vector Search + Reciprocal Rank Fusion)
+- Retrieval-Augmented Generation (RAG)
+- OpenAI tool calling
+- Restaurant knowledge base
+- Table availability checking
+- Reservation creation
+- Multi-turn conversations with session memory
+- Automatic slot extraction from natural language
+- Evaluation pipeline
+- Runtime monitoring with latency logging
+- Automated test suite
+
+---
 
 ## Architecture
 
-```text
-FastAPI
-  ↓
-Session Engine
-  ↓
-Agent Loop
-  ↓
-Tool Registry + Dispatcher
-  ↓
-Tools
-  ├── Restaurant Search
-  ├── Availability Check
-  └── Booking Creation
-  ↓
-Business Logic / Knowledge Base
+```mermaid
+flowchart TD
+
+    U[User]
+    API[FastAPI API]
+    SESSION[Session Manager]
+    AGENT[AI Agent Loop]
+    RAG[Hybrid Retrieval]
+    KB[(Restaurant Knowledge Base)]
+    DISPATCH[Tool Dispatcher]
+    SEARCH[Search Tool]
+    AVAIL[Availability Tool]
+    BOOK[Booking Tool]
+
+    U --> API
+    API --> SESSION
+    SESSION --> AGENT
+
+    AGENT --> RAG
+    AGENT --> DISPATCH
+
+    RAG --> KB
+
+    DISPATCH --> SEARCH
+    DISPATCH --> AVAIL
+    DISPATCH --> BOOK
 ```
 
-## LLM Zoomcamp Concepts Used
+Layered view:
 
-| Module | Project Implementation |
-|---|---|
-| Module 1 — RAG | Restaurant knowledge base and grounded answers |
-| Module 2 — Vector Search | Keyword search, vector search, and hybrid retrieval with RRF |
-| Module 3 — Orchestration | Custom agent loop with tool calling |
-| Module 4 — Evaluation | Basic retrieval and business logic evaluation |
-| Module 5 — Monitoring | JSONL chat logs with latency tracking |
+```text
+User Interface
+  ↓
+FastAPI API
+  ↓
+Session Layer
+  ↓
+Agent Layer
+  ↓
+Retrieval + Tool Layer
+  ↓
+Deterministic Business Logic
+  ↓
+Knowledge Base / Runtime Storage
+```
+
+The language model is responsible for reasoning and deciding **when** to use a tool.
+
+Python is responsible for deterministic business logic such as retrieval, availability checks, reservation creation, and session management.
+
+> **LLM thinks. Python executes.**
+
+---
 
 ## Project Structure
 
 ```text
 app/
-  agent/        Agent loop, tool registry, dispatcher, prompts
-  rag/          Loader, embedder, keyword/vector/hybrid search
-  session/      Session history, slots, JSON session store
-  tools/        Deterministic business logic tools
-  monitoring/   Chat interaction logging
-  main.py       FastAPI entrypoint
+├── agent/         AI agent loop, dispatcher and tool registry
+├── monitoring/    Runtime logging
+├── rag/           Hybrid retrieval pipeline
+├── session/       Session management and slot extraction
+├── tools/         Restaurant business logic
+└── main.py        FastAPI application
 
 data/
-  restaurant/   Restaurant knowledge base
+└── restaurant/
+    └── knowledge_base.md
 
-evaluations/    Evaluation test cases and runner
-scripts/        Utility scripts
-tests/          Automated tests
+evaluations/       Evaluation runner and test cases
+scripts/           Utility scripts
+tests/             Automated tests
 ```
 
-## Setup
+---
+
+## Getting Started
+
+### Install dependencies
 
 ```bash
 uv sync
 ```
 
-Create `.env`:
+### Create a `.env` file
 
 ```text
-OPENAI_API_KEY=your_api_key_here
+OPENAI_API_KEY=your_api_key
 ```
 
-Download the local ONNX embedding model:
+### Download the embedding model
 
 ```bash
 uv run python scripts/download_embedder.py
 ```
 
-## Run the API
+### Start the application
 
 ```bash
 uv run uvicorn app.main:app --reload
 ```
 
-Health check:
+The API will be available at:
 
-```bash
-curl http://127.0.0.1:8000/health
+```text
+http://127.0.0.1:8000
 ```
 
-## Example Usage
+---
 
-Ask a knowledge-base question:
+## Quick Demo
 
-```bash
-curl -X POST http://127.0.0.1:8000/chat \
-  -H "Content-Type: application/json" \
-  -d '{"message": "Do you have vegan options?"}'
-```
-
-Check availability:
+Ask a question about the restaurant:
 
 ```bash
 curl -X POST http://127.0.0.1:8000/chat \
   -H "Content-Type: application/json" \
-  -d '{"message": "Do you have a table for 4 people on 2026-07-03 at 19:30?"}'
+  -d '{"message":"Do you have vegan options?"}'
 ```
 
-Multi-turn booking:
+Start a reservation:
 
 ```bash
 curl -X POST http://127.0.0.1:8000/chat \
   -H "Content-Type: application/json" \
-  -d '{"message": "I want to book a table for 4 people."}'
+  -d '{"message":"I want to book a table for four people."}'
 ```
 
-Then continue with the returned `session_id`:
+Continue the conversation using the returned `session_id`:
 
 ```bash
 curl -X POST http://127.0.0.1:8000/chat \
   -H "Content-Type: application/json" \
-  -d '{"session_id": "SESSION_ID_HERE", "message": "2026-07-03 at 19:30. My name is Sinan and my phone number is +41000000000."}'
+  -d '{"session_id":"<SESSION_ID>","message":"2026-07-03 at 19:30. My name is John Doe and my phone number is +41000000000."}'
 ```
 
-## Run Tests
+---
 
-```bash
-uv run pytest
-```
+## Evaluation
 
-Current test coverage includes:
-
-- availability logic
-- booking creation
-- tool dispatcher
-- slot extraction
-- search
-- session persistence
-
-## Run Evaluation
+Run the evaluation suite:
 
 ```bash
 uv run python -m evaluations.run_evaluation
 ```
 
-Example result:
+Current results:
 
-```json
-{
-  "total": 6,
-  "passed": 6,
-  "accuracy": 1.0,
-  "by_type": {
-    "knowledge": {
-      "total": 3,
-      "passed": 3
-    },
-    "availability": {
-      "total": 3,
-      "passed": 3
-    }
-  }
-}
+- 6 scenarios
+- 6 passed
+- 100% accuracy
+
+---
+
+## Testing
+
+Run the test suite:
+
+```bash
+uv run pytest
 ```
+
+Current status:
+
+- 14 tests
+- 14 passing
+
+---
 
 ## Monitoring
 
-The application logs chat interactions to JSONL during runtime.
+Every conversation is logged during runtime.
 
-Each record includes:
+Each log entry contains:
 
-- session ID
-- user message
-- assistant answer
-- latency in milliseconds
-- timestamp
+- Session ID
+- User message
+- Assistant response
+- Response latency
+- Timestamp
 
-Runtime logs are ignored by Git.
+Runtime files are excluded from version control.
 
-## Design Principle
+---
 
-LLM thinks. Python executes.
+## Design Principles
 
-The LLM decides when to use tools and how to communicate with the user. Deterministic business logic such as availability checks, booking creation, session storage, and retrieval is handled by Python.
+This project follows a few simple principles:
+
+- Keep the architecture modular and easy to understand.
+- Let the LLM handle reasoning, not business logic.
+- Keep business rules deterministic and testable.
+- Prefer simple solutions over unnecessary complexity.
+- Build reusable components that can be adapted to other service domains.
+
+Although the first implementation targets restaurant reservations, the same architecture can be extended to other service businesses such as hotels, clinics, salons, and customer support systems.

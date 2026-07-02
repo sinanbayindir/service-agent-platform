@@ -1,7 +1,10 @@
+from time import perf_counter
+
 from fastapi import FastAPI
 from pydantic import BaseModel
 
 from app.agent.agent import run_agent
+from app.monitoring.logger import log_chat_interaction
 from app.session.extractor import extract_slots
 from app.session.manager import SessionManager
 
@@ -31,6 +34,8 @@ def health_check() -> dict[str, str]:
 
 @app.post("/chat", response_model=ChatResponse)
 def chat(request: ChatRequest) -> ChatResponse:
+    started_at = perf_counter()
+
     session = session_manager.get_or_create(request.session_id)
 
     session.add_message("user", request.message)
@@ -40,6 +45,15 @@ def chat(request: ChatRequest) -> ChatResponse:
 
     session.add_message("assistant", answer)
     session_manager.save(session)
+
+    latency_ms = (perf_counter() - started_at) * 1000
+
+    log_chat_interaction(
+        session_id=session.session_id,
+        user_message=request.message,
+        assistant_answer=answer,
+        latency_ms=latency_ms,
+    )
 
     return ChatResponse(
         answer=answer,

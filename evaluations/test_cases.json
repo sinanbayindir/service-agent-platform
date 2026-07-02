@@ -1,0 +1,47 @@
+[
+    {
+        "id": "knowledge_vegan_options",
+        "type": "knowledge",
+        "question": "Do you have vegan options?",
+        "expected_section": "Menu Highlights",
+        "expected_answer_contains": "vegan options"
+    },
+    {
+        "id": "knowledge_opening_hours",
+        "type": "knowledge",
+        "question": "Are you open on Monday?",
+        "expected_section": "Opening Hours",
+        "expected_answer_contains": "closed"
+    },
+    {
+        "id": "knowledge_large_groups",
+        "type": "knowledge",
+        "question": "Can I book for 8 people?",
+        "expected_section": "Reservation Policy",
+        "expected_answer_contains": "manual confirmation"
+    },
+    {
+        "id": "availability_valid",
+        "type": "availability",
+        "booking_date": "2026-07-03",
+        "booking_time": "19:30",
+        "guests": 4,
+        "expected_available": true
+    },
+    {
+        "id": "availability_closed_day",
+        "type": "availability",
+        "booking_date": "2026-07-06",
+        "booking_time": "19:30",
+        "guests": 2,
+        "expected_available": false
+    },
+    {
+        "id": "availability_large_group",
+        "type": "availability",
+        "booking_date": "2026-07-03",
+        "booking_time": "19:30",
+        "guests": 7,
+        "expected_available": false
+    }
+]
